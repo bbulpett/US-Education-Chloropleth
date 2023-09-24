@@ -11,3 +11,28 @@ let canvas = d3.select('#canvas');
 let drawMap = () => {
  // TODO: Draw the map on the canvas
 }
+
+// Asynchronous function using D3 json method to import JSON data
+d3.json(countyURL).then(
+  (data, error) => {
+    if (error) {
+      console.log(error);
+    } else {
+      countyData = data;
+      console.log(countyData); // For debugging to make sure data is imported
+
+      d3.json(educationURL).then(
+        (data, error) => {
+          if (error) {
+            console.log(error);
+          } else {
+            educationData = data;
+            console.log(educationData); // For debugging to make sure data is imported
+
+            drawMap();
+          }
+        }
+      )
+    }
+  }
+)
