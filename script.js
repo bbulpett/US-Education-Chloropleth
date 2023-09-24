@@ -9,30 +9,52 @@ let educationData;
 let canvas = d3.select('#canvas');
 
 let drawMap = () => {
- // TODO: Draw the map on the canvas
+    /*  Send country data array to canvas svg path. D3 geoPath will convert
+        coordinates to strings that can be used to draw SVG paths on canvas.
+    */
+    canvas.selectAll("path")
+        .data(countyData)
+        .enter()
+        .append("path")
+        .attr("d", d3.geoPath()) // "d" is set of coordinates needed to draw path
+        .attr("class", "county") // Set class for CSS styling
 }
 
-// Asynchronous function using D3 json method to import JSON data
+/*  Asynchronous function using D3 json method to import JSON data. D3 requres a
+    format of GeoJSON for map data.
+    https://geojson.org/
+*/
 d3.json(countyURL).then(
-  (data, error) => {
-    if (error) {
-      console.log(error);
-    } else {
-      countyData = data;
-      console.log(countyData); // For debugging to make sure data is imported
-
-      d3.json(educationURL).then(
-        (data, error) => {
-          if (error) {
+    (data, error) => {
+        if (error) {
             console.log(error);
-          } else {
-            educationData = data;
-            console.log(educationData); // For debugging to make sure data is imported
+        } else {
+            /*  Counties are represented as objects in an array. Each object has a
+                property called "id" that contains an array of arcs. Each arc is an
+                array of coordinates used to draw lines on map.
+            */
 
-            drawMap();
-          }
+            /*  Use topojson library to convert TopoJSON to GeoJSON and extract features
+                from TopoJSON object. Results in a set of coordinates for each county.
+                FIPS code will be used to match county data with education data.
+                (FIPS code is a unique identifier for each county, kinda like a zip code)
+            */
+            countyData = topojson.feature(data, data.objects.counties).features;
+
+            console.log(countyData); // Make sure data is imported
+
+            d3.json(educationURL).then(
+                (data, error) => {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        educationData = data;
+                        console.log(educationData); // Make sure data is imported
+
+                        drawMap();
+                    }
+                }
+            )
         }
-      )
     }
-  }
 )
